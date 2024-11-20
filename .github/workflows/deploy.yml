@@ -12,8 +12,8 @@ on:
         description: "Release the build"
         required: true
         type: boolean
-      testflight:
-        description: "Is this a TestFlight build"
+      is_testflight:
+        description: "TestFlight build"
         required: true
         type: boolean
   workflow_call:
@@ -21,7 +21,7 @@ on:
       ipa_url:
         required: true
         type: string
-      testflight:
+      is_testflight:
         required: true
         type: boolean
       release:
@@ -231,7 +231,7 @@ jobs:
           unzip -q ${{ env.APP_NAME }}.ipa
           VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
           
-          if [[ "${{ github.event.inputs.testflight || inputs.testflight }}" == "true" ]]; then
+          if [[ "${{ github.event.inputs.is_testflight || inputs.is_testflight }}" == "true" ]]; then
             BUILD=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleVersion | cut -d '"' -f 4)
             VERSION="${VERSION}_${BUILD}"
             echo "IS_PRERELEASE=true" >> $GITHUB_ENV
