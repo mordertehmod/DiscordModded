@@ -3,6 +3,16 @@
 Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. \
 There are still slight differences between these two.
 
+<details>
+<summary>Amended Licensing Terms Notice</summary>
+
+As of commit b7cd1471f7d9dd79fe7832e7e7face296f2fd6a6, this repository includes an amendment to the original Open Software License 3.0 ("OSL 3.0"). The following new conditions have been added to the license:
+
+- Substantial Modification Requirement: Any forks, derivative works, or redistributions of this project must meet the requirement for substantial modification as outlined in the updated license. Redistribution without substantial changes to the codebase or functionality is prohibited.
+
+This amendment is made in accordance with the OSL 3.0's Section 16, which allows for modification of the license as long as the modified version is not presented as the original OSL. The modifications applied here are clearly delineated and include only the added condition of requiring substantial changes to redistributed code.
+</details>
+
 > [!WARNING]
 > When sideloading with an Apple Developer Account, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes several of the issues. See below for details.
 

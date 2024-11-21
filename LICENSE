@@ -178,6 +178,7 @@ Effective Starting From Commit: c568969333ae20bbbb6e924f6404e4f02fb65fd7
 Any forks, derivative works, or redistributions of this project starting from commit c568969333ae20bbbb6e924f6404e4f02fb65fd7 must meet the following requirement:
 
 Substantial Changes: The resulting work must include substantial changes, defined as:
+
 - Modifications affecting at least 30% of the codebase, or
 - Addition of significant new features that materially enhance the software's functionality.
 
