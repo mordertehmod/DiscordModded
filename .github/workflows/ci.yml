@@ -9,5 +9,8 @@ jobs:
     name: Build Check
     uses: ./.github/workflows/deploy.yml
     with:
-      caller_workflow: ci
+      ipa_url: ""
+      is_testflight: false
+      release: false
+      caller_workflow: "ci"
     secrets: inherit 
