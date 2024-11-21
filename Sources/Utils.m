@@ -1,5 +1,7 @@
 #import "Utils.h"
 
+BOOL isJailbroken = NO;
+
 NSURL *getPyoncordDirectory(void) {
     NSFileManager *fileManager  = [NSFileManager defaultManager];
     NSURL *documentDirectoryURL = [[fileManager URLsForDirectory:NSDocumentDirectory

@@ -1,16 +1,19 @@
 #import "Fonts.h"
 #import "LoaderConfig.h"
 #import "Logger.h"
+#import "Settings.h"
 #import "Theme.h"
 #import "Utils.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 static NSURL *source;
-static BOOL isJailbroken;
 static NSString *bunnyPatchesBundlePath;
 static NSURL *pyoncordDirectory;
 static LoaderConfig *loaderConfig;
+static NSTimeInterval shakeStartTime = 0;
+static BOOL isShaking                = NO;
+id gBridge                           = nil;
 
 %hook RCTCxxBridge
 
@@ -18,6 +21,9 @@ static LoaderConfig *loaderConfig;
     if (![url.absoluteString containsString:@"main.jsbundle"]) {
         return %orig;
     }
+
+    gBridge = self;
+    BunnyLog(@"Stored bridge reference: %@", gBridge);
 
     NSBundle *bunnyPatchesBundle = [NSBundle bundleWithPath:bunnyPatchesBundlePath];
     if (!bunnyPatchesBundle) {
@@ -149,6 +155,31 @@ static LoaderConfig *loaderConfig;
     }
 
     %orig(script, url, async);
+}
+
+%end
+
+%hook UIWindow
+
+- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if (motion == UIEventSubtypeMotionShake) {
+        isShaking      = YES;
+        shakeStartTime = [[NSDate date] timeIntervalSince1970];
+    }
+    %orig;
+}
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if (motion == UIEventSubtypeMotionShake && isShaking) {
+        NSTimeInterval currentTime   = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval shakeDuration = currentTime - shakeStartTime;
+
+        if (shakeDuration >= 1.0 && shakeDuration <= 3.0) {
+            dispatch_async(dispatch_get_main_queue(), ^{ showSettingsSheet(); });
+        }
+        isShaking = NO;
+    }
+    %orig;
 }
 
 %end
