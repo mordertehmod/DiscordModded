@@ -202,7 +202,9 @@ jobs:
           path: ${{ env.APP_NAME }}.ipa
 
   release-app:
-    if: inputs.caller_workflow != 'ci' && github.event.inputs.release == 'true' || inputs.release == 'true'
+    if: |
+      inputs.caller_workflow != 'ci' && 
+      (github.event.inputs.release == 'true' || inputs.release == true)
     runs-on: macos-15
     needs: build-ipa
     permissions:
@@ -283,7 +285,9 @@ jobs:
             });
 
   app-repo:
-    if: inputs.caller_workflow != 'ci' && github.event.inputs.release == 'true'
+    if: |
+      inputs.caller_workflow != 'ci' && 
+      (github.event.inputs.release == 'true' || inputs.release == true)
     continue-on-error: true
     runs-on: macos-15
     needs: release-app
