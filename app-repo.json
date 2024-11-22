@@ -89,7 +89,7 @@
     },
     {
       "name": "Bunny (TestFlight)",
-      "bundleIdentifier": "com.hammerandchisel.discord",
+      "bundleIdentifier": "com.hammerandchisel.discord.testflight",
       "developerName": "Pylix",
       "iconURL": "https://pyoncord.github.io/assets/icon-altstore.png",
       "localizedDescription": "A client mod for Discord (TestFlight builds)",
