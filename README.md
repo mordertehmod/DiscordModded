@@ -63,17 +63,18 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 
 ### Jailbroken
 
-1. Install Bunny by downloading the appropriate Debian package (or by building your own, see [Building](#building)) and adding it to your package manager. Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks.
+- Install Bunny by downloading the appropriate Debian package (or by building your own, see [Building](#building)) and adding it to your package manager. Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks (rootful support is not tested).
 
 ### Jailed
 
+<a href="https://tinyurl.com/bdfkbtf7"><img src="https://adriancastro.dev/0byxzkzdsauj.png" width="230"></a>
 <a href="https://tinyurl.com/24zjszuf"><img src="https://i.imgur.com/dsbDLK9.png" width="230"></a>
 <a href="https://tinyurl.com/yh455zk6"><img src="https://i.imgur.com/46qhEAv.png" width="230"></a>
 
 > [!NOTE]
 > TrollStore may display an encryption warning, which you can disregard.
 
-1. Download and install [Bunny.ipa](https://github.com/pyoncord/BunnyTweak/releases/latest/download/Bunny.ipa) using your preferred sideloading method.
+- Download and install [Bunny.ipa](https://github.com/pyoncord/BunnyTweak/releases/latest/download/Bunny.ipa) using your preferred sideloading method.
 
 ## Building
 
