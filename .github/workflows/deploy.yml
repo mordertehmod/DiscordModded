@@ -308,6 +308,12 @@ jobs:
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
           VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          
+          if [[ "${{ github.event.inputs.is_testflight || inputs.is_testflight }}" == "true" ]]; then
+            BUILD=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleVersion | cut -d '"' -f 4)
+            VERSION="${VERSION}_${BUILD}"
+          fi
+          
           DATE=$(date -u +"%Y-%m-%d")
           IPA_SIZE=$(ls -l ${{ env.APP_NAME }}.ipa | awk '{print $5}')
           DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v$VERSION/${{ env.APP_NAME }}.ipa
