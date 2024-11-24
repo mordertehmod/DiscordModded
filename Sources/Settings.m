@@ -177,30 +177,33 @@
 
 - (void)openDocumentsDirectory {
     if (isJailbroken) {
-        NSString *filzaPath =
-            [NSString stringWithFormat:@"filza://view%@", getPyoncordDirectory().path];
-        NSURL *filzaURL =
-            [NSURL URLWithString:[filzaPath stringByAddingPercentEncodingWithAllowedCharacters:
-                                                [NSCharacterSet URLQueryAllowedCharacterSet]]];
-
+        NSString *filzaPath = [NSString stringWithFormat:@"filza://view%@", getPyoncordDirectory().path];
+        NSURL *filzaURL = [NSURL URLWithString:[filzaPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+        
         if ([[UIApplication sharedApplication] canOpenURL:filzaURL]) {
             [[UIApplication sharedApplication] openURL:filzaURL options:@{} completionHandler:nil];
             return;
         }
     }
-
-    NSArray *paths      = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
-                                                            inDomains:NSUserDomainMask];
+    
+    NSArray *paths = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
     NSURL *documentsUrl = [paths firstObject];
-
+    
     NSString *sharedPath = [NSString stringWithFormat:@"shareddocuments://%@", documentsUrl.path];
-    NSURL *sharedUrl =
-        [NSURL URLWithString:[sharedPath stringByAddingPercentEncodingWithAllowedCharacters:
-                                             [NSCharacterSet URLQueryAllowedCharacterSet]]];
-
-    if (sharedUrl && [[UIApplication sharedApplication] canOpenURL:sharedUrl]) {
-        [[UIApplication sharedApplication] openURL:sharedUrl options:@{} completionHandler:nil];
-        return;
+    NSURL *sharedUrl = [NSURL URLWithString:[sharedPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+    
+    if ([[UIApplication sharedApplication] canOpenURL:sharedUrl]) {
+        [[UIApplication sharedApplication] openURL:sharedUrl options:@{} completionHandler:^(BOOL success) {
+            if (!success) {
+                UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeFolder]];
+                picker.directoryURL = documentsUrl;
+                [self presentViewController:picker animated:YES completion:nil];
+            }
+        }];
+    } else {
+        UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeFolder]];
+        picker.directoryURL = documentsUrl;
+        [self presentViewController:picker animated:YES completion:nil];
     }
 }
 
