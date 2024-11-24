@@ -106,8 +106,7 @@
     void (^performAction)(void) = ^{
         switch (indexPath.row) {
         case 1:
-            refetchBundle();
-            reloadApp(self);
+            refetchBundle(self);
             break;
         case 3:
             [self loadCustomBundle];
@@ -116,12 +115,10 @@
             resetCustomBundleURL(self);
             break;
         case 5:
-            deletePlugins();
-            reloadApp(self);
+            deletePluginsAndReload(self);
             break;
         case 6:
-            deleteThemes();
-            reloadApp(self);
+            deleteThemesAndReload(self);
             break;
         case 7:
             deleteAllData(self);
@@ -323,7 +320,8 @@
                                 }
 
                                 setCustomBundleURL(url, self);
-                                reloadApp(self);
+                                removeCachedBundle();
+                                gracefulExit(self);
                             });
                         }] resume];
                 }];

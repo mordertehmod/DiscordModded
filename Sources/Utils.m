@@ -162,12 +162,6 @@ void resetCustomBundleURL(UIViewController *presenter) {
     gracefulExit(presenter);
 }
 
-void refetchBundle(void) {
-    [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"bundle.js"]
-                  error:nil];
-}
-
 BOOL isSafeModeEnabled(void) {
     NSURL *documentDirectoryURL =
         [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
@@ -434,4 +428,19 @@ void removeCachedBundle(void) {
     if (error) {
         BunnyLog(@"Failed to remove cached bundle: %@", error);
     }
+}
+
+void refetchBundle(UIViewController *presenter) {
+    removeCachedBundle();
+    gracefulExit(presenter);
+}
+
+void deletePluginsAndReload(UIViewController *presenter) {
+    deletePlugins();
+    reloadApp(presenter);
+}
+
+void deleteThemesAndReload(UIViewController *presenter) {
+    deleteThemes();
+    reloadApp(presenter);
 }
