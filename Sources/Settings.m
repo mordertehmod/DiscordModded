@@ -1,10 +1,8 @@
 #import "Settings.h"
+#import "DeviceModels.h"
 #import "Logger.h"
 #import "Utils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-#import <objc/message.h>
-
-extern id gBridge;
 
 @implementation BunnySettingsViewController
 
@@ -20,7 +18,7 @@ extern id gBridge;
     [super viewDidLoad];
     self.view.backgroundColor = UIColor.systemGroupedBackgroundColor;
 
-    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero
+    UITableView *tableView = [[UITableView alloc] initWithFrame:self.view.bounds
                                                           style:UITableViewStyleInsetGrouped];
     tableView.translatesAutoresizingMaskIntoConstraints = NO;
     tableView.delegate                                  = self;
@@ -28,7 +26,7 @@ extern id gBridge;
     [self.view addSubview:tableView];
 
     [NSLayoutConstraint activateConstraints:@[
-        [tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [tableView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
         [tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
         [tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
@@ -40,7 +38,7 @@ extern id gBridge;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 8;
+    return 10;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
@@ -52,16 +50,18 @@ extern id gBridge;
     }
 
     NSArray *options = @[
-        @{
+        @{@"title" : @"Toggle Safe Mode", @"icon" : @"shield", @"destructive" : @NO}, @{
             @"title" : @"Refetch Bundle",
             @"icon" : @"arrow.triangle.2.circlepath",
             @"destructive" : @NO
         },
-        @{@"title" : @"Load Custom Bundle", @"icon" : @"link.badge.plus", @"destructive" : @NO}, @{
-            @"title" : @"Reset Custom Bundle URL",
-            @"icon" : @"arrow.counterclockwise",
-            @"destructive" : @YES
+        @{
+            @"title" : @"Switch Bundle Version",
+            @"icon" : @"arrow.triangle.2.circlepath.circle",
+            @"destructive" : @NO
         },
+        @{@"title" : @"Load Custom Bundle", @"icon" : @"link.badge.plus", @"destructive" : @NO},
+        @{@"title" : @"Reset Bundle", @"icon" : @"arrow.counterclockwise", @"destructive" : @YES},
         @{@"title" : @"Delete All Plugins", @"icon" : @"trash", @"destructive" : @YES},
         @{@"title" : @"Delete All Themes", @"icon" : @"trash", @"destructive" : @YES},
         @{@"title" : @"Delete All Mod Data", @"icon" : @"trash.fill", @"destructive" : @YES},
@@ -83,65 +83,72 @@ extern id gBridge;
     cell.imageView.tintColor =
         [option[@"destructive"] boolValue] ? UIColor.systemRedColor : UIColor.systemBlueColor;
 
+    if (indexPath.row == 0) {
+        cell.textLabel.text = isSafeModeEnabled() ? @"Disable Safe Mode" : @"Enable Safe Mode";
+    }
+
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
+    if (indexPath.row == 0) {
+        toggleSafeMode();
+        return;
+    }
+
+    if (indexPath.row == 2) {
+        showBundleSelector(self);
+        return;
+    }
+
     void (^performAction)(void) = ^{
         switch (indexPath.row) {
-        case 0:
-            [self refetchBundle];
-            break;
         case 1:
-            [self loadCustomBundle];
-            break;
-        case 2:
-            [self resetCustomBundle];
+            refetchBundle(self);
             break;
         case 3:
-            [self deletePlugins];
+            [self loadCustomBundle];
             break;
         case 4:
-            [self deleteThemes];
+            resetCustomBundleURL(self);
             break;
         case 5:
-            [self deleteAllData];
+            deletePluginsAndReload(self);
             break;
         case 6:
-            [self openDocumentsDirectory];
+            deleteThemesAndReload(self);
             break;
         case 7:
+            deleteAllData(self);
+            break;
+        case 8:
+            [self openDocumentsDirectory];
+            break;
+        case 9:
             [self openGitHub];
             break;
         }
     };
 
-    if (indexPath.row !=
-        1) {
+    if (indexPath.row != 3 && indexPath.row != 8 && indexPath.row != 9) {
         NSString *actionText;
         switch (indexPath.row) {
-        case 0:
+        case 1:
             actionText = @"refetch the bundle";
             break;
-        case 2:
-            actionText = @"reset the custom bundle URL";
-            break;
-        case 3:
-            actionText = @"delete all plugins";
-            break;
         case 4:
-            actionText = @"delete all themes";
+            actionText = @"reset the bundle";
             break;
         case 5:
-            actionText = @"delete all mod data";
+            actionText = @"delete all plugins";
             break;
         case 6:
-            actionText = @"open the app folder";
+            actionText = @"delete all themes";
             break;
         case 7:
-            actionText = @"open a GitHub issue";
+            actionText = @"delete all mod data";
             break;
         default:
             actionText = @"perform this action";
@@ -168,70 +175,31 @@ extern id gBridge;
     }
 }
 
-- (void)reloadApp {
-    [self
-        dismissViewControllerAnimated:NO
-                           completion:^{
-                               if (gBridge &&
-                                   [gBridge isKindOfClass:NSClassFromString(@"RCTCxxBridge")]) {
-                                   BunnyLog(@"Found stored bridge reference");
-
-                                   SEL reloadSelector = NSSelectorFromString(@"reload");
-                                   if ([gBridge respondsToSelector:reloadSelector]) {
-                                       BunnyLog(@"Found reload method, attempting to call");
-                                       ((void (*)(id, SEL))objc_msgSend)(gBridge, reloadSelector);
-                                       return;
-                                   }
-                               }
-
-                               BunnyLog(@"Falling back to exit method");
-                               UIApplication *app = [UIApplication sharedApplication];
-                               ((void (*)(id, SEL))objc_msgSend)(app, @selector(suspend));
-                               dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC),
-                                              dispatch_get_main_queue(), ^{ exit(0); });
-                           }];
-}
-
-- (void)refetchBundle {
-    [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"bundle.js"]
-                  error:nil];
-    [self reloadApp];
-}
-
 - (void)openDocumentsDirectory {
-    NSURL *documentsURL =
-        [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
-                                                inDomains:NSUserDomainMask] firstObject];
     if (isJailbroken) {
-        NSString *filzaPath = [NSString stringWithFormat:@"filza://view%@", documentsURL.path];
+        NSString *filzaPath =
+            [NSString stringWithFormat:@"filza://view%@", getPyoncordDirectory().path];
         NSURL *filzaURL =
             [NSURL URLWithString:[filzaPath stringByAddingPercentEncodingWithAllowedCharacters:
                                                 [NSCharacterSet URLQueryAllowedCharacterSet]]];
 
         if ([[UIApplication sharedApplication] canOpenURL:filzaURL]) {
             [[UIApplication sharedApplication] openURL:filzaURL options:@{} completionHandler:nil];
-        } else {
-            UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc]
-                initForOpeningContentTypes:@[ UTTypeFolder ]];
-            picker.directoryURL                    = documentsURL;
-            [self presentViewController:picker animated:YES completion:nil];
+            return;
         }
-    } else {
-        UIDocumentPickerViewController *picker =
-            [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[ UTTypeFolder ]];
-        picker.directoryURL = documentsURL;
-        [self presentViewController:picker animated:YES completion:nil];
     }
-}
 
-- (void)deleteAllData {
-    [[NSFileManager defaultManager] removeItemAtURL:getPyoncordDirectory() error:nil];
-    [self reloadApp];
+    NSURL *documentsURL = getPyoncordDirectory();
+    UIDocumentPickerViewController *picker =
+        [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[ UTTypeFolder ]];
+    picker.directoryURL = documentsURL;
+    [self presentViewController:picker animated:YES completion:nil];
 }
 
 - (void)openGitHub {
-    UIDevice *device = [UIDevice currentDevice];
+    UIDevice *device      = [UIDevice currentDevice];
+    NSString *deviceId    = getDeviceIdentifier();
+    NSString *deviceModel = DEVICE_MODELS[deviceId] ?: deviceId;
     NSString *appVersion =
         [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     NSString *buildNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
@@ -249,19 +217,20 @@ extern id gBridge;
                                     "1. \n2. \n3. \n\n"
                                     "### Expected Behavior\n\n"
                                     "### Actual Behavior\n",
-                                   device.model, device.systemVersion, PACKAGE_VERSION, appVersion,
+                                   deviceModel, device.systemVersion, PACKAGE_VERSION, appVersion,
                                    buildNumber, isJailbroken ? @"Yes" : @"No"];
 
-    NSString *encodedBody =
-        [body stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet
-                                                                     URLQueryAllowedCharacterSet]];
     NSString *encodedTitle = [@"bug(iOS): "
         stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet
                                                                URLQueryAllowedCharacterSet]];
-    NSString *urlString    = [NSString
+    NSString *encodedBody =
+        [body stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet
+                                                                     URLQueryAllowedCharacterSet]];
+
+    NSString *urlString = [NSString
         stringWithFormat:@"https://github.com/bunny-mod/BunnyTweak/issues/new?title=%@&body=%@",
                          encodedTitle, encodedBody];
-    NSURL *url             = [NSURL URLWithString:urlString];
+    NSURL *url          = [NSURL URLWithString:urlString];
     [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 }
 
@@ -350,33 +319,9 @@ extern id gBridge;
                                     return;
                                 }
 
-                                NSDictionary *config =
-                                    @{@"customLoadUrlEnabled" : @YES,
-                                      @"customLoadUrl" : urlString};
-                                NSError *jsonError = nil;
-                                NSData *jsonData =
-                                    [NSJSONSerialization dataWithJSONObject:config
-                                                                    options:0
-                                                                      error:&jsonError];
-                                if (jsonError) {
-                                    [self presentViewController:alert animated:YES completion:nil];
-                                    showErrorAlert(@"Error", @"Failed to save configuration", nil);
-                                    return;
-                                }
-
-                                NSError *writeError = nil;
-                                [jsonData writeToURL:[getPyoncordDirectory()
-                                                         URLByAppendingPathComponent:@"loader.json"]
-                                             options:NSDataWritingAtomic
-                                               error:&writeError];
-                                if (writeError) {
-                                    [self presentViewController:alert animated:YES completion:nil];
-                                    showErrorAlert(@"Error", @"Failed to save configuration file",
-                                                   nil);
-                                    return;
-                                }
-
-                                [self reloadApp];
+                                setCustomBundleURL(url, self);
+                                removeCachedBundle();
+                                gracefulExit(self);
                             });
                         }] resume];
                 }];
@@ -392,29 +337,6 @@ extern id gBridge;
 - (void)dismiss {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
-
-- (void)deletePlugins {
-    [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"plugins"]
-                  error:nil];
-    [self reloadApp];
-}
-
-- (void)deleteThemes {
-    [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"themes"]
-                  error:nil];
-    [self reloadApp];
-}
-
-- (void)resetCustomBundle {
-    [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"loader.json"]
-                  error:nil];
-    [self reloadApp];
-}
-
-@end
 
 void showSettingsSheet(void) {
     BunnySettingsViewController *settingsVC =
@@ -438,5 +360,14 @@ void showSettingsSheet(void) {
             break;
         }
     }
-    [window.rootViewController presentViewController:navController animated:YES completion:nil];
+
+    if (!window) {
+        window = [[UIApplication sharedApplication] windows].firstObject;
+    }
+
+    if (window && window.rootViewController) {
+        [window.rootViewController presentViewController:navController animated:YES completion:nil];
+    }
 }
+
+@end

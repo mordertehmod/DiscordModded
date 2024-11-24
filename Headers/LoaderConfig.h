@@ -7,4 +7,5 @@
 + (instancetype)getLoaderConfig;
 - (instancetype)init;
 - (BOOL)loadConfig;
+- (BOOL)saveConfig;
 @end
