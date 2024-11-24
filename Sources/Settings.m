@@ -190,21 +190,9 @@
     NSURL *documentsUrl = [paths firstObject];
     
     NSString *sharedPath = [NSString stringWithFormat:@"shareddocuments://%@", documentsUrl.path];
-    NSURL *sharedUrl = [NSURL URLWithString:[sharedPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+    NSURL *sharedUrl = [NSURL URLWithString:sharedPath];
     
-    if ([[UIApplication sharedApplication] canOpenURL:sharedUrl]) {
-        [[UIApplication sharedApplication] openURL:sharedUrl options:@{} completionHandler:^(BOOL success) {
-            if (!success) {
-                UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeFolder]];
-                picker.directoryURL = documentsUrl;
-                [self presentViewController:picker animated:YES completion:nil];
-            }
-        }];
-    } else {
-        UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeFolder]];
-        picker.directoryURL = documentsUrl;
-        [self presentViewController:picker animated:YES completion:nil];
-    }
+    [[UIApplication sharedApplication] openURL:sharedUrl options:@{} completionHandler:nil];
 }
 
 - (void)openGitHub {
