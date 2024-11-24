@@ -163,7 +163,7 @@ id gBridge                           = nil;
 
 - (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake) {
-        isShaking      = YES;
+        isShaking = YES;
         shakeStartTime = [[NSDate date] timeIntervalSince1970];
     }
     %orig;
@@ -171,10 +171,10 @@ id gBridge                           = nil;
 
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake && isShaking) {
-        NSTimeInterval currentTime   = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
         NSTimeInterval shakeDuration = currentTime - shakeStartTime;
 
-        if (shakeDuration >= 1.0 && shakeDuration <= 3.0) {
+        if (shakeDuration >= 0.5 && shakeDuration <= 2.0) {
             dispatch_async(dispatch_get_main_queue(), ^{ showSettingsSheet(); });
         }
         isShaking = NO;
