@@ -189,11 +189,19 @@
         }
     }
 
-    NSURL *documentsURL = getPyoncordDirectory();
-    UIDocumentPickerViewController *picker =
-        [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[ UTTypeFolder ]];
-    picker.directoryURL = documentsURL;
-    [self presentViewController:picker animated:YES completion:nil];
+    NSArray *paths      = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
+                                                            inDomains:NSUserDomainMask];
+    NSURL *documentsUrl = [paths firstObject];
+
+    NSString *sharedPath = [NSString stringWithFormat:@"shareddocuments://%@", documentsUrl.path];
+    NSURL *sharedUrl =
+        [NSURL URLWithString:[sharedPath stringByAddingPercentEncodingWithAllowedCharacters:
+                                             [NSCharacterSet URLQueryAllowedCharacterSet]]];
+
+    if (sharedUrl && [[UIApplication sharedApplication] canOpenURL:sharedUrl]) {
+        [[UIApplication sharedApplication] openURL:sharedUrl options:@{} completionHandler:nil];
+        return;
+    }
 }
 
 - (void)openGitHub {
