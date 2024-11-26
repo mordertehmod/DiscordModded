@@ -1,6 +1,8 @@
 # BunnyTweak
 
-Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. \
+![screenshot](https://adriancastro.dev/c6wkhfl0rq1f.PNG)
+
+Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) and [OpenInDiscord](https://github.com/castdrian/OpenInDiscord) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. \
 There are still slight differences between these two.
 
 <details>
