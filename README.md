@@ -16,7 +16,7 @@ This amendment is made in accordance with the OSL 3.0's Section 16, which allows
 </details>
 
 > [!WARNING]
-> When sideloading with an Apple Developer Account, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes several of the issues. See below for details.
+> When sideloading with an ADP account cert, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes several of the issues. See below for details.
 
 <details>
 <summary>Issues & Workaround</summary>
