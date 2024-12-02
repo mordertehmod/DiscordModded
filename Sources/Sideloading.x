@@ -4,6 +4,7 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 #import <UIKit/UIKit.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <dlfcn.h>
 
 typedef struct __CMSDecoder *CMSDecoderRef;
@@ -18,7 +19,6 @@ extern OSStatus CMSDecoderCopyContent(CMSDecoderRef cmsDecoder, CFDataRef *conte
 #define DISCORD_NAME @"Discord"
 
 typedef NS_ENUM(NSInteger, BundleIDError) {
-    BundleIDErrorFiles,
     BundleIDErrorIcon,
     BundleIDErrorPasskey
 };
@@ -29,11 +29,10 @@ static void showBundleIDError(BundleIDError error) {
     void (^completion)(void) = nil;
 
     switch (error) {
-    case BundleIDErrorFiles:
     case BundleIDErrorIcon:
         message = @"For this to work change the Bundle ID so that it matches your "
                   @"provisioning profile's App ID (excluding the Team ID prefix).";
-        title   = error == BundleIDErrorFiles ? @"Cannot Access Files" : @"Cannot Change Icon";
+        title   = @"Cannot Change Icon";
         break;
     case BundleIDErrorPasskey:
         message    = @"Passkeys are not supported when sideloading Discord. "
@@ -44,41 +43,6 @@ static void showBundleIDError(BundleIDError error) {
     }
 
     showErrorAlert(title, message, completion);
-}
-
-static NSString *getProvisioningAppID(void) {
-    NSString *provisionPath = [NSBundle.mainBundle pathForResource:@"embedded"
-                                                            ofType:@"mobileprovision"];
-    if (!provisionPath)
-        return nil;
-    NSData *provisionData = [NSData dataWithContentsOfFile:provisionPath];
-    if (!provisionData)
-        return nil;
-    CMSDecoderRef decoder = NULL;
-    CMSDecoderCreate(&decoder);
-    CMSDecoderUpdateMessage(decoder, provisionData.bytes, provisionData.length);
-    CMSDecoderFinalizeMessage(decoder);
-    CFDataRef dataRef = NULL;
-    CMSDecoderCopyContent(decoder, &dataRef);
-    NSData *data = (__bridge_transfer NSData *)dataRef;
-    if (decoder)
-        CFRelease(decoder);
-    NSError *error = nil;
-    id plist       = [NSPropertyListSerialization propertyListWithData:data
-                                                         options:0
-                                                          format:NULL
-                                                           error:&error];
-    if (!plist || ![plist isKindOfClass:[NSDictionary class]])
-        return nil;
-    NSString *appID = plist[@"Entitlements"][@"application-identifier"];
-    if (!appID)
-        return nil;
-    NSArray *components = [appID componentsSeparatedByString:@"."];
-    if (components.count > 1) {
-        return [[components subarrayWithRange:NSMakeRange(1, components.count - 1)]
-            componentsJoinedByString:@"."];
-    }
-    return nil;
 }
 
 static NSString *getAccessGroupID(void) {
@@ -180,22 +144,53 @@ static BOOL isSelfCall(void) {
 }
 %end
 
-%hook UIViewController
-- (void)presentViewController:(UIViewController *)viewControllerToPresent
-                     animated:(BOOL)flag
-                   completion:(void (^)(void))completion {
-    if ([viewControllerToPresent isKindOfClass:[UIDocumentPickerViewController class]]) {
-        NSString *provisioningAppID = getProvisioningAppID();
-        NSString *currentBundleID   = [[NSBundle mainBundle] bundleIdentifier];
+// https://github.com/khanhduytran0/LiveContainer/blob/main/TweakLoader/DocumentPicker.m
+%hook UIDocumentPickerViewController
 
-        if (provisioningAppID && ![provisioningAppID isEqualToString:currentBundleID]) {
-            BunnyLog(@"Intercepted UIDocumentPickerViewController presentation");
-            showBundleIDError(BundleIDErrorFiles);
-            return;
-        }
+- (instancetype)initForOpeningContentTypes:(NSArray<UTType *> *)contentTypes asCopy:(BOOL)asCopy {
+    BOOL shouldMultiselect = NO;
+    if ([contentTypes count] == 1 && contentTypes[0] == UTTypeFolder) {
+        shouldMultiselect = YES;
     }
-    %orig;
+
+    NSArray<UTType *> *contentTypesNew = @[ UTTypeItem, UTTypeFolder ];
+
+    UIDocumentPickerViewController *ans = %orig(contentTypesNew, YES);
+    if (shouldMultiselect) {
+        [ans setAllowsMultipleSelection:YES];
+    }
+    return ans;
 }
+
+- (instancetype)initWithDocumentTypes:(NSArray<UTType *> *)contentTypes inMode:(NSUInteger)mode {
+    return [self initForOpeningContentTypes:contentTypes asCopy:(mode == 1 ? NO : YES)];
+}
+
+- (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection {
+    if ([self allowsMultipleSelection]) {
+        return;
+    }
+    %orig(YES);
+}
+
+%end
+
+%hook UIDocumentBrowserViewController
+
+- (instancetype)initForOpeningContentTypes:(NSArray<UTType *> *)contentTypes {
+    NSArray<UTType *> *contentTypesNew = @[ UTTypeItem, UTTypeFolder ];
+    return %orig(contentTypesNew);
+}
+
+%end
+
+%hook NSURL
+
+- (BOOL)startAccessingSecurityScopedResource {
+    %orig;
+    return YES;
+}
+
 %end
 
 %hook ASAuthorizationController
