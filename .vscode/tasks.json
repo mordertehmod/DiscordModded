@@ -46,6 +46,17 @@
 				"close": true
 			},
 			"dependsOn": ["Build Tweak"]
+		},
+		{
+			"type": "shell",
+			"label": "Build IPA",
+			"command": "chmod +x build-local.sh && ./build-local.sh",
+			"presentation": {
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true,
+				"reveal": "always"
+			}
 		}
 	]
 }

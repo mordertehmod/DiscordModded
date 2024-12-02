@@ -34,20 +34,12 @@ To resolve the fixable issues, you need to match the app's bundle ID with your p
     <td rowspan="5"><img src="https://adriancastro.dev/e0hbonxknepw.jpg" width="300"></td>
 </tr>
 <tr>
-    <td>Cannot select items via Files app</td>
-    <td>✓</td>
-</tr>
-<tr>
     <td>Cannot share items to Discord</td>
     <td>✗</td>
 </tr>
 <tr>
     <td>Cannot use passkeys</td>
     <td>✗</td>
-</tr>
-<tr>
-    <td></td>
-    <td></td>
 </tr>
 </table>
 

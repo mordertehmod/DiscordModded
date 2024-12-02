@@ -9,3 +9,9 @@ xcuserdata/
 .theos/
 packages/
 .DS_Store
+
+venv/
+patcher
+ipa-icons.zip
+*.ipa
+OpenInDiscord/
