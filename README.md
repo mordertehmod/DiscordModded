@@ -57,7 +57,8 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 
 ### Jailbroken
 
-- Install Bunny by downloading the appropriate Debian package (or by building your own, see [Building](#building)) and adding it to your package manager. Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks (rootful support is not tested).
+- Add the apt repo to your packages manager: <https://repo.adriancastro.dev>
+- Manually install by downloading the Debian package (or by building your own, see [Building](#building)) and adding it to your package manager.
 
 ### Jailed
 

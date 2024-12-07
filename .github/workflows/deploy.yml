@@ -66,12 +66,12 @@ jobs:
 
           set -e
 
-          release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
+          release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm64.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
           control_version=$(grep '^Version:' control | cut -d ' ' -f 2)
 
           if [ "$release_version" = "$control_version" ]; then
             echo "Versions match. Downloading DEB files..."
-            echo "$release_info" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
+            echo "$release_info" | jq -r '.assets[] | select(.name | endswith("arm64.deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
             echo "DEB_DOWNLOADED=true" >> $GITHUB_ENV
           else
             echo "Versions do not match. No files will be downloaded."
@@ -101,23 +101,15 @@ jobs:
 
       - name: Build packages
         if: env.DEB_DOWNLOADED == 'false'
-        run: make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+        run: make package FINALPACKAGE=1
 
       - name: Set DEB path
         run: |
           if [ "${{ env.DEB_DOWNLOADED }}" == "true" ]; then
-            echo "DEB_PATH=*-arm.deb" >> $GITHUB_ENV
             echo "ROOTLESS_DEB_PATH=*-arm64.deb" >> $GITHUB_ENV
           else
-            echo "DEB_PATH=packages/*-arm.deb" >> $GITHUB_ENV
             echo "ROOTLESS_DEB_PATH=packages/*-arm64.deb" >> $GITHUB_ENV
           fi
-
-      - name: Upload package
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: ${{ env.DEB_PATH }}
 
       - name: Upload rootless package
         uses: actions/upload-artifact@v4
@@ -176,8 +168,6 @@ jobs:
           NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
           PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
           VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
-          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
-          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
           ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
           echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
@@ -193,7 +183,7 @@ jobs:
 
       - name: Inject tweak and extension
         run: |
-          cyan -duwsgq -i discord.ipa -o ${{ env.APP_NAME }}.ipa -f ${{ env.DEB_FILE_NAME }} OpenInDiscord/build/OpenInDiscord.appex
+          cyan -duwsgq -i discord.ipa -o ${{ env.APP_NAME }}.ipa -f ${{ env.ROOTLESS_DEB_FILE_NAME }} OpenInDiscord/build/OpenInDiscord.appex
 
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
@@ -219,8 +209,6 @@ jobs:
           NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
           PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
           VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
-          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
-          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
           ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
           echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
@@ -251,7 +239,6 @@ jobs:
         with:
           tag_name: v${{ env.DISCORD_VERSION }}
           files: |
-            ${{ env.DEB_FILE_NAME }}
             ${{ env.ROOTLESS_DEB_FILE_NAME }}
             ${{ env.APP_NAME }}.ipa
           generate_release_notes: true
@@ -267,7 +254,7 @@ jobs:
           github-token: ${{ secrets.WORKFLOW_DISPATCH_TOKEN }}
           script: |
             const assets = JSON.parse('${{ steps.create_release.outputs.assets }}');
-            const debAsset = assets.find(asset => asset.name === '${{ env.DEB_FILE_NAME }}');
+            const debAsset = assets.find(asset => asset.name === '${{ env.ROOTLESS_DEB_FILE_NAME }}');
             
             if (!debAsset) {
               core.setFailed('Could not find DEB asset in release');
@@ -280,7 +267,7 @@ jobs:
               event_type: 'package-update',
               client_payload: {
                 package_url: debAsset.browser_download_url,
-                package_name: '${{ env.DEB_FILE_NAME }}'
+                package_name: '${{ env.ROOTLESS_DEB_FILE_NAME }}'
               }
             });
 
