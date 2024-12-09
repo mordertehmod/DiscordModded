@@ -2,8 +2,7 @@
 
 ![screenshot](https://adriancastro.dev/c6wkhfl0rq1f.PNG)
 
-Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) and [OpenInDiscord](https://github.com/castdrian/OpenInDiscord) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. \
-There are still slight differences between these two.
+Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) and [OpenInDiscord](https://github.com/castdrian/OpenInDiscord) into Discord. Forked from [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak) and modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed)'s behavior.
 
 <details>
 <summary>Amended Licensing Terms Notice</summary>
@@ -16,12 +15,12 @@ This amendment is made in accordance with the OSL 3.0's Section 16, which allows
 </details>
 
 > [!WARNING]
-> When sideloading with an ADP account cert, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes several of the issues. See below for details.
+> When sideloading with an ADP account cert, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes one of the issues. See below for details.
 
 <details>
 <summary>Issues & Workaround</summary>
 <br/>
-To resolve the fixable issues, you need to match the app's bundle ID with your provisioning profile's App ID (excluding the team ID prefix):
+To resolve the fixable issue, you need to match the app's bundle ID with your provisioning profile's App ID (excluding the team ID prefix):
 <table>
 <tr>
     <th>Issue</th>
@@ -57,8 +56,8 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 
 ### Jailbroken
 
-- Add the apt repo to your packages manager: <https://repo.adriancastro.dev>
-- Manually install by downloading the Debian package (or by building your own, see [Building](#building)) and adding it to your package manager.
+- Add the apt repo to your package manager: <https://repo.adriancastro.dev>
+- Manually install by downloading the Debian package (or by building your own, see [Building](#building)) and adding it to your package manager
 
 ### Jailed
 
@@ -84,12 +83,10 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 
 2. Install the required dependencies. You can do this by running `brew install make ldid` in your terminal. If you do not have brew installed, follow the instructions [here](https://brew.sh/).
 
-3. Setup your path accordingly. We recommend you run the following before running the next commands, as well as any time you want to build BunnyTweak.
+3. Setup your gnu make path:
 
 ```bash
 export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
-# feel free to set whatever path you want, but it needs to be a direct path, without relative parts
-export THEOS="/Users/vendetta/IPA/theos"
 ```
 
 4. Setup [theos](https://theos.dev/docs/installation-macos) by running the script provided by theos.
@@ -100,13 +97,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/i
 
 If you've already installed theos, you can run `$THEOS/bin/update-theos` to make sure it's up to date.
 
-5. Clone this repository with `git clone git@github.com:pyoncord/BunnyTweak.git` and `cd` into it. Replace the URL with your fork if you've forked this repository.
+5. Clone this repository via `git clone git@github.com:pyoncord/BunnyTweak.git` and `cd` into it.
 
-6. To build BunnyTweak, you can run `rm -rf packages && make clean && make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless`. The first command will remove any previous packages, the second will clean the project, the third will build the rootful package (which is denoted by the `arm.deb` ending), and the fourth will build the rootless package (which is denoted by the `arm64.deb` ending).
+6. To build, you can run `make package`.
 
-The first time you run this, it might take a bit longer, but subsequent builds should be much faster.
-
-The resulting `.deb` files will be in the `packages` folder. As a reminder, `*arm.deb` is for rootful jailbreaks and sideloading, and `*arm64.deb` is for rootless jailbreaks.
+The resulting `.deb` file will be in the `packages` folder.
 
 </details>
 
