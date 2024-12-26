@@ -101,7 +101,7 @@ jobs:
 
       - name: Build packages
         if: env.DEB_DOWNLOADED == 'false'
-        run: make package FINALPACKAGE=1
+        run: make package
 
       - name: Set DEB path
         run: |

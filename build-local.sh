@@ -40,7 +40,7 @@ if [ -z "$IPA_FILE" ]; then
 fi
 
 print_status "Building tweak..."
-make package FINALPACKAGE=1
+make package
 
 if [ $? -ne 0 ]; then
     print_error "Failed to build tweak"

@@ -2,7 +2,7 @@
 #import "LoaderConfig.h"
 #import "Logger.h"
 #import "Settings.h"
-#import "Theme.h"
+#import "Themes.h"
 #import "Utils.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -102,15 +102,28 @@ id gBridge                           = nil;
 
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 
-    NSString *themeString =
-        [NSString stringWithContentsOfURL:[pyoncordDirectory
-                                              URLByAppendingPathComponent:@"current-theme.json"]
-                                 encoding:NSUTF8StringEncoding
-                                    error:nil];
-    if (themeString) {
-        NSString *jsCode =
-            [NSString stringWithFormat:@"globalThis.__PYON_LOADER__.storedTheme=%@", themeString];
-        %orig([jsCode dataUsingEncoding:NSUTF8StringEncoding], source, async);
+    NSData *themeData = [NSData dataWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]];
+    if (themeData) {
+        NSError *jsonError;
+        NSDictionary *themeDict = [NSJSONSerialization JSONObjectWithData:themeData options:0 error:&jsonError];
+        if (!jsonError) {
+            BunnyLog(@"Loading theme data...");
+            if (themeDict[@"data"]) {
+                NSDictionary *data = themeDict[@"data"];
+                if (data[@"semanticColors"] && data[@"rawColors"]) {
+                    BunnyLog(@"Initializing theme colors from theme data");
+                    initializeThemeColors(data[@"semanticColors"], data[@"rawColors"]);
+                }
+            }
+            
+            NSString *jsCode = [NSString stringWithFormat:@"globalThis.__PYON_LOADER__.storedTheme=%@", 
+                [[NSString alloc] initWithData:themeData encoding:NSUTF8StringEncoding]];
+            %orig([jsCode dataUsingEncoding:NSUTF8StringEncoding], source, async);
+        } else {
+            BunnyLog(@"Error parsing theme JSON: %@", jsonError);
+        }
+    } else {
+        BunnyLog(@"No theme data found at path: %@", [pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]);
     }
 
     NSData *fontData = [NSData
