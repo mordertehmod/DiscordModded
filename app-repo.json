@@ -13,6 +13,12 @@
       "tintColor": "7289da",
       "versions": [
         {
+          "version": "264.1",
+          "date": "2025-02-02",
+          "size": 88515872,
+          "downloadURL": "https://github.com/bunny-mod/BunnyTweak/releases/download/v264.1/Bunny.ipa"
+        },
+        {
           "version": "264.0",
           "date": "2025-01-29",
           "size": 88534004,
