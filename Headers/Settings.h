@@ -7,4 +7,4 @@
 @end
 
 extern id gBridge;
-void showSettingsSheet(void);
+void      showSettingsSheet(void);
