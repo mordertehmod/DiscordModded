@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+static NSString *const kBlockedString = @"MCc0JywlJw==";
+
 static NSURL *source;
 static NSString *bunnyPatchesBundlePath;
 static NSURL *pyoncordDirectory;
@@ -53,11 +55,36 @@ id gBridge                           = nil;
 
     NSURL *bundleUrl;
     if (loaderConfig.customLoadUrlEnabled && loaderConfig.customLoadUrl) {
+        NSString *urlString = loaderConfig.customLoadUrl.absoluteString.lowercaseString;
+        if ([urlString containsString:decryptString(kBlockedString)]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIViewController *rootVC =
+                    [UIApplication sharedApplication].windows.firstObject.rootViewController;
+                handleBadBundleAttempt(rootVC);
+            });
+            return %orig;
+        }
+
+        NSData *existingBundle = [NSData
+            dataWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"bundle.js"]];
+        if (existingBundle) {
+            NSString *bundleContent = [[NSString alloc] initWithData:existingBundle
+                                                            encoding:NSUTF8StringEncoding];
+            if ([bundleContent.lowercaseString containsString:decryptString(kBlockedString)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIViewController *rootVC =
+                        [UIApplication sharedApplication].windows.firstObject.rootViewController;
+                    handleBadBundleAttempt(rootVC);
+                });
+                return %orig;
+            }
+        }
+
         bundleUrl = loaderConfig.customLoadUrl;
         BunnyLog(@"Using custom load URL: %@", bundleUrl.absoluteString);
     } else {
-        bundleUrl = [NSURL URLWithString:@"https://raw.githubusercontent.com/"
-                                         @"bunny-mod/builds/main/bunny.min.js"];
+        bundleUrl = [NSURL
+            URLWithString:@"https://raw.githubusercontent.com/bunny-mod/builds/main/bunny.min.js"];
         BunnyLog(@"Using default bundle URL: %@", bundleUrl.absoluteString);
     }
 
@@ -102,10 +129,14 @@ id gBridge                           = nil;
 
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 
-    NSData *themeData = [NSData dataWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]];
+    NSData *themeData =
+        [NSData dataWithContentsOfURL:[pyoncordDirectory
+                                          URLByAppendingPathComponent:@"current-theme.json"]];
     if (themeData) {
         NSError *jsonError;
-        NSDictionary *themeDict = [NSJSONSerialization JSONObjectWithData:themeData options:0 error:&jsonError];
+        NSDictionary *themeDict = [NSJSONSerialization JSONObjectWithData:themeData
+                                                                  options:0
+                                                                    error:&jsonError];
         if (!jsonError) {
             BunnyLog(@"Loading theme data...");
             if (themeDict[@"data"]) {
@@ -115,15 +146,18 @@ id gBridge                           = nil;
                     initializeThemeColors(data[@"semanticColors"], data[@"rawColors"]);
                 }
             }
-            
-            NSString *jsCode = [NSString stringWithFormat:@"globalThis.__PYON_LOADER__.storedTheme=%@", 
-                [[NSString alloc] initWithData:themeData encoding:NSUTF8StringEncoding]];
+
+            NSString *jsCode =
+                [NSString stringWithFormat:@"globalThis.__PYON_LOADER__.storedTheme=%@",
+                                           [[NSString alloc] initWithData:themeData
+                                                                 encoding:NSUTF8StringEncoding]];
             %orig([jsCode dataUsingEncoding:NSUTF8StringEncoding], source, async);
         } else {
             BunnyLog(@"Error parsing theme JSON: %@", jsonError);
         }
     } else {
-        BunnyLog(@"No theme data found at path: %@", [pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]);
+        BunnyLog(@"No theme data found at path: %@",
+                 [pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]);
     }
 
     NSData *fontData = [NSData
@@ -176,7 +210,7 @@ id gBridge                           = nil;
 
 - (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake) {
-        isShaking = YES;
+        isShaking      = YES;
         shakeStartTime = [[NSDate date] timeIntervalSince1970];
     }
     %orig;
@@ -184,7 +218,7 @@ id gBridge                           = nil;
 
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake && isShaking) {
-        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval currentTime   = [[NSDate date] timeIntervalSince1970];
         NSTimeInterval shakeDuration = currentTime - shakeStartTime;
 
         if (shakeDuration >= 0.5 && shakeDuration <= 2.0) {
