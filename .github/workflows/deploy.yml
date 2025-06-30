@@ -137,7 +137,7 @@ jobs:
 
       - name: Download IPA icons
         run: |
-          curl -L -o ipa-icons.zip https://github.com/meadf1/Discord-Bunny/raw/refs/heads/main/ipa-icons.zip
+          curl -L -o ipa-icons.zip https://github.com/meadf1/DiscordPluh/raw/refs/heads/main/ipa-icons.zip
 
       - name: Clone OpenInDiscord
         uses: actions/checkout@v4
