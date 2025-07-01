@@ -7,8 +7,8 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.customLoadUrlEnabled = YES;
-        self.customLoadUrl        = [NSURL URLWithString:@"https://github.com/C0C0B01/Kettu/raw/refs/heads/main/dist/kettu.js"];
+        self.customLoadUrlEnabled = NO;
+        self.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/bunny.js"];
     }
     return self;
 }
