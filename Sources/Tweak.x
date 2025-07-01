@@ -65,7 +65,7 @@ id                    gBridge        = nil;
     else
     {
         bundleUrl = [NSURL
-            URLWithString:@"https://raw.githubusercontent.com/bunny-mod/builds/main/bunny.min.js"];
+            URLWithString:@"https://raw.githubusercontent.com/C0C0B01/Kettu/refs/heads/main/dist/kettu.js"];
         BunnyLog(@"Using default bundle URL: %@", bundleUrl.absoluteString);
     }
 
