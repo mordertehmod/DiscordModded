@@ -183,13 +183,13 @@ jobs:
 
       - name: Inject tweak and extension
         run: |
-          cyan -duwsgq -i discord.ipa -o Discord-Kettu.ipa -f ${{ env.ROOTLESS_DEB_FILE_NAME }} OpenInDiscord/build/OpenInDiscord.appex
+          cyan -duwsgq -i discord.ipa -o DiscordPluh.ipa -f ${{ env.ROOTLESS_DEB_FILE_NAME }} OpenInDiscord/build/OpenInDiscord.appex
 
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
         with:
           name: ipa
-          path: Discord-Kettu.ipa
+          path: DiscordPluh.ipa
 
   release-app:
     if: |
@@ -220,7 +220,7 @@ jobs:
 
       - name: Extract Discord Version
         run: |
-          unzip -q Discord-Kettu.ipa
+          unzip -q DiscordPluh.ipa
           VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
           
           if [[ "${{ github.event.inputs.is_testflight || inputs.is_testflight }}" == "true" ]]; then
@@ -240,7 +240,7 @@ jobs:
           tag_name: v${{ env.DISCORD_VERSION }}
           files: |
             ${{ env.ROOTLESS_DEB_FILE_NAME }}
-            Discord-Kettu.ipa
+            DiscordPluh.ipa
           generate_release_notes: true
           prerelease: ${{ env.IS_PRERELEASE }}
           fail_on_unmatched_files: true
