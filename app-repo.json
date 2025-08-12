@@ -7,7 +7,7 @@
       "name": "Discord",
       "bundleIdentifier": "com.hammerandchisel.discord",
       "developerName": "Mead",
-      "iconURL": "https://github.com/meadf1/DiscordPluh/blob/main/icons/icon.png?raw=true",
+      "iconURL": "https://github.com/mordertehmod/DiscordModded/blob/main/icons/icon.png?raw=true",
       "localizedDescription": "A client mod for Discord",
       "subtitle": "A client mod for Discord",
       "tintColor": "7289da",
@@ -16,7 +16,7 @@
           "version": "285.0",
           "date": "2025-06-27",
           "size": 95662914,
-          "downloadURL": "https://github.com/meadf1/DiscordPluh/releases/download/v285.0/DiscordPluh.ipa"
+          "downloadURL": "https://github.com/mordertehmod/DiscordModded/releases/download/v295.0/DiscordPluh.ipa"
         }
       ],
       "appPermissions": {}
